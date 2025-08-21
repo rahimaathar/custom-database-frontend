@@ -1,0 +1,28 @@
+{
+    "version": 2,
+    "name": "custom-database-frontend",
+    "builds": [
+        {
+            "src": "package.json",
+            "use": "@vercel/next"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
+        }
+    ],
+    "env": {
+        "NEXT_PUBLIC_BACKEND_URL": "@backend-url"
+    },
+    "functions": {
+        "pages/api/**/*.ts": {
+            "maxDuration": 30
+        }
+    }
+}
