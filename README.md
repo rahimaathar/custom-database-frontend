@@ -15,11 +15,6 @@ A modern React/Next.js frontend for the Mini-Postgres database system.
 - **Operation Status**: Color-coded badges for Inserted, Updated, Deleted, Retrieved
 - **Responsive Design**: Works on desktop and mobile devices
 
-### 📝 Query History
-- **Persistent History**: Queries are saved in localStorage
-- **Re-run Queries**: Click to re-execute previous queries
-- **History Management**: Clear individual queries or entire history
-- **Success/Failure Tracking**: Visual indicators for query results
 
 ### 🎨 Modern UI/UX
 - **Clean Design**: Modern, responsive interface with Tailwind CSS
