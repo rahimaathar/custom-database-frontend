@@ -16,12 +16,11 @@ interface DatabaseStats {
     total_records: number;
 }
 
-// Tree-related interfaces removed since tree visualization is now handled by BPTreeVisualizer
+
 
 export default function DatabaseDisplay() {
     const [records, setRecords] = useState<DatabaseRecord[]>([]);
     const [stats, setStats] = useState<DatabaseStats | null>(null);
-    // Removed treeData state since tree API calls are now handled by BPTreeVisualizer
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showValues, setShowValues] = useState(true);
@@ -33,18 +32,18 @@ export default function DatabaseDisplay() {
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Fetch all database data
+
     const fetchDatabaseData = async () => {
         try {
             setIsLoading(true);
             setError(null);
 
-            // Fetch all records
+         
             const recordsResponse = await axios.post('/api/query', {
                 query: 'SELECT * FROM data'
             });
 
-            // Fetch stats
+         
             const statsResponse = await axios.get('/api/stats');
 
             if (recordsResponse.data.success) {
@@ -55,8 +54,7 @@ export default function DatabaseDisplay() {
                 setStats(statsResponse.data.data);
             }
 
-            // Removed tree API call to prevent excessive requests
-            // Tree data is now only fetched in the BPTreeVisualizer component
+     
 
         } catch (error: any) {
             console.error('Database fetch error:', error);
@@ -67,12 +65,12 @@ export default function DatabaseDisplay() {
         }
     };
 
-    // Initial fetch and auto-refresh setup
+    
     useEffect(() => {
-        // Always fetch data on initial mount
+        
         fetchDatabaseData();
 
-        // Set up auto-refresh if enabled
+       
         if (autoRefresh) {
             intervalRef.current = setInterval(fetchDatabaseData, refreshInterval);
         }
@@ -82,9 +80,9 @@ export default function DatabaseDisplay() {
                 clearInterval(intervalRef.current);
             }
         };
-    }, []); // Only run on mount
+    }, []); 
 
-    // Handle auto-refresh changes
+
     useEffect(() => {
         if (autoRefresh) {
             intervalRef.current = setInterval(fetchDatabaseData, refreshInterval);
@@ -102,13 +100,13 @@ export default function DatabaseDisplay() {
         };
     }, [autoRefresh, refreshInterval]);
 
-    // Manual refresh
+    
     const handleRefresh = () => {
         fetchDatabaseData();
         toast.success('Database refreshed');
     };
 
-    // Filter and sort records
+
     const filteredAndSortedRecords = records
         .filter(record => {
             if (!searchTerm) return true;
@@ -119,12 +117,12 @@ export default function DatabaseDisplay() {
             let aValue: string | number;
             let bValue: string | number;
 
-            // Handle timestamp sorting
+           
             if (sortBy === 'timestamp') {
                 aValue = new Date(a.timestamp || 0).getTime();
                 bValue = new Date(b.timestamp || 0).getTime();
             } else {
-                // For key and value, we know they exist
+           
                 aValue = a[sortBy];
                 bValue = b[sortBy];
             }
@@ -136,7 +134,7 @@ export default function DatabaseDisplay() {
             }
         });
 
-    // Export data
+    
     const handleExport = () => {
         const dataStr = JSON.stringify(filteredAndSortedRecords, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -149,11 +147,11 @@ export default function DatabaseDisplay() {
         toast.success('Database exported successfully');
     };
 
-    // Tree visualization is now handled by the BPTreeVisualizer component
+   
 
     return (
         <div className="space-y-6">
-            {/* Header with controls */}
+         
             <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
@@ -240,9 +238,8 @@ export default function DatabaseDisplay() {
                 </div>
             </div>
 
-            {/* Tree visualization is now handled by the BPTreeVisualizer component */}
 
-            {/* Data Table */}
+        
             <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-medium text-gray-900">Database Records</h3>
@@ -251,7 +248,7 @@ export default function DatabaseDisplay() {
                     </div>
                 </div>
 
-                {/* Search and Sort Controls */}
+               
                 <div className="flex flex-wrap items-center gap-4 mb-4">
                     <div className="flex items-center space-x-2">
                         <Search className="h-4 w-4 text-gray-400" />
@@ -283,7 +280,7 @@ export default function DatabaseDisplay() {
                     </div>
                 </div>
 
-                {/* Records Table */}
+               
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -329,7 +326,6 @@ export default function DatabaseDisplay() {
                     </table>
                 </div>
 
-                {/* Pagination or load more */}
                 {filteredAndSortedRecords.length > 50 && (
                     <div className="mt-4 text-center">
                         <p className="text-sm text-gray-500">
@@ -339,7 +335,6 @@ export default function DatabaseDisplay() {
                 )}
             </div>
 
-            {/* Error Display */}
             {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <div className="flex items-center space-x-2">
@@ -356,7 +351,6 @@ export default function DatabaseDisplay() {
                 </div>
             )}
 
-            {/* Loading State */}
             {isLoading && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div className="flex items-center space-x-2">
