@@ -17,6 +17,6 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_BACKEND_URL": "@backend-url"
+    "NEXT_PUBLIC_BACKEND_URL": "https://custom-database-backend.onrender.com/"
   }
 }
