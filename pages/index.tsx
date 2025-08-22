@@ -27,7 +27,7 @@ interface DatabaseStats {
 export default function Home() {
     const [activeTab, setActiveTab] = useState<'database' | 'query' | 'insert' | 'tree' | 'stats'>('database');
 
-    // Fetch database statistics - simplified version
+  
     const [stats, setStats] = useState<DatabaseStats | null>(null);
     const [statsLoading, setStatsLoading] = useState(true);
     const [statsError, setStatsError] = useState<Error | null>(null);
@@ -55,11 +55,11 @@ export default function Home() {
 
     useEffect(() => {
         fetchStats();
-        const interval = setInterval(fetchStats, 10000); // Increased to 10 seconds
+        const interval = setInterval(fetchStats, 10000); 
         return () => clearInterval(interval);
     }, []);
 
-    // Execute query function
+ 
     const [executeQueryLoading, setExecuteQueryLoading] = useState(false);
     const [executeQueryResult, setExecuteQueryResult] = useState<QueryResult | null>(null);
 
@@ -74,7 +74,7 @@ export default function Home() {
 
             if (result.success) {
                 toast.success(result.message || 'Query executed successfully');
-                fetchStats(); // Refresh stats after query
+                fetchStats(); 
             } else {
                 toast.error(result.message || 'Query failed');
             }
@@ -85,7 +85,7 @@ export default function Home() {
         }
     };
 
-    // Insert function
+  
     const [insertLoading, setInsertLoading] = useState(false);
 
     const insertData = async (key: string, value: string) => {
@@ -98,7 +98,7 @@ export default function Home() {
 
             if (result.success) {
                 toast.success('Data inserted successfully');
-                fetchStats(); // Refresh stats after insert
+                fetchStats(); 
             } else {
                 toast.error(result.message || 'Insert failed');
             }
@@ -137,8 +137,8 @@ export default function Home() {
                         <div className="flex items-center space-x-3">
                             <Database className="h-8 w-8 text-primary-600" />
                             <div>
-                                <h1 className="text-xl font-semibold text-gray-900">Mini-Postgres</h1>
-                                <p className="text-sm text-gray-500">Educational Database System</p>
+                                <h1 className="text-xl font-semibold text-gray-900">Custom Database</h1>
+                                
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -160,13 +160,9 @@ export default function Home() {
                 </div>
             </header>
 
-            {/* Main Content */}
+    
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-
-
-
-                {/* Tabs */}
+ 
                 <div className="bg-white rounded-lg shadow-sm border">
                     <div className="border-b border-gray-200">
                         <nav className="-mb-px flex space-x-8 px-6">
@@ -189,7 +185,7 @@ export default function Home() {
                         </nav>
                     </div>
 
-                    {/* Tab Content */}
+                    
                     <div className="p-6">
                         {activeTab === 'database' && (
                             <div className="animate-fade-in">
