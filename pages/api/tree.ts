@@ -2,6 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { getBackendUrl, config } from '../../lib/config';
 
+// Extend global type for rate limiting
+declare global {
+    var treeApiLastCall: { [key: string]: number } | undefined;
+}
+
 interface TreeResponse {
     success: boolean;
     message: string;
@@ -28,11 +33,11 @@ export default async function handler(
     try {
         // Enhanced rate limiting - only allow one request per 10 seconds per IP
         const now = Date.now();
-        const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+        const clientIP = String(req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown');
 
         // Simple in-memory rate limiting
         if (!global.treeApiLastCall) global.treeApiLastCall = {};
-        const lastCall = global.treeApiLastCall[clientIP] || 0;
+        const lastCall = global.treeApiLastCall?.[clientIP] || 0;
 
         if (now - lastCall < 10000) { // 10 second rate limit
             console.log(`🌳 Tree API: Rate limited for ${clientIP}, last call was ${now - lastCall}ms ago`);
@@ -45,7 +50,9 @@ export default async function handler(
             });
         }
 
-        global.treeApiLastCall[clientIP] = now;
+        if (global.treeApiLastCall) {
+            global.treeApiLastCall[clientIP] = now;
+        }
         console.log('🌳 Tree API: Fetching tree data from backend...');
 
         const backendUrl = getBackendUrl();
@@ -130,11 +137,11 @@ export default async function handler(
     try {
         // Add rate limiting - only allow one request per 5 seconds per IP
         const now = Date.now();
-        const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+        const clientIP = String(req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown');
 
         // Simple in-memory rate limiting (in production, use Redis or similar)
         if (!global.treeApiLastCall) global.treeApiLastCall = {};
-        const lastCall = global.treeApiLastCall[clientIP] || 0;
+        const lastCall = global.treeApiLastCall?.[clientIP] || 0;
 
         if (now - lastCall < 5000) { // 5 second rate limit
             console.log(`Tree API: Rate limited for ${clientIP}, last call was ${now - lastCall}ms ago`);
@@ -147,7 +154,9 @@ export default async function handler(
             });
         }
 
-        global.treeApiLastCall[clientIP] = now;
+        if (global.treeApiLastCall) {
+            global.treeApiLastCall![clientIP] = now;
+        }
         console.log('Tree API: Fetching tree data from backend...');
 
         const response = await axios.get('https://custom-database-backend.onrender.com/tree', {
