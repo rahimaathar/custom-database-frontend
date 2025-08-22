@@ -56,7 +56,7 @@ export default async function handler(
         console.log('🌳 Tree API: Fetching tree data from backend...');
 
         const apiUrl = getApiUrl('tree');
-        
+
         // Use HTTP/1.1 config but with longer timeout for tree data
         const treeConfig = {
             ...getBackendAxiosConfig(),
