@@ -55,42 +55,36 @@ export default function BPTreeVisualizer() {
     const [error, setError] = useState<Error | null>(null);
     const [lastFetchTime, setLastFetchTime] = useState<number>(0);
     const [loadingStartTime, setLoadingStartTime] = useState<number>(0);
-
-    // Search visualization state
     const [searchKey, setSearchKey] = useState('');
     const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
-
-    // Tree visualization state
     const [zoomLevel, setZoomLevel] = useState(1);
     const [showValues, setShowValues] = useState(false);
     const [highlightMode, setHighlightMode] = useState<'none' | 'search' | 'path'>('none');
     const [animationSpeed, setAnimationSpeed] = useState(500);
-
-    // Refs
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Fetch tree data from backend - OPTIMIZED WITH RATE LIMITING
+
     const fetchTreeData = useCallback(async (force: boolean = false) => {
         console.log(`🌳 BPTreeVisualizer: fetchTreeData called, force=${force}`);
 
-        // Enhanced rate limiting - prevent rapid successive calls
+      
         const now = Date.now();
-        if (!force && now - lastFetchTime < 10000) { // 10 second minimum between calls
+        if (!force && now - lastFetchTime < 10000) { 
             console.log('🌳 BPTreeVisualizer: Skipping fetch due to rate limiting (10s minimum)');
             return;
         }
 
         console.log(`🌳 BPTreeVisualizer: fetchTreeData called, force=${force}, timeSinceLast=${now - lastFetchTime}ms`);
 
-        if (!force && now - lastFetchTime < 30000) { // Increased debounce to 30 seconds
+        if (!force && now - lastFetchTime < 30000) { 
             console.log('BPTreeVisualizer: Skipping fetch due to debounce');
             return;
         }
 
-        // Prevent multiple simultaneous requests
+        
         if (isLoading && !force) {
             console.log('BPTreeVisualizer: Skipping fetch due to loading state');
             return;
@@ -101,9 +95,9 @@ export default function BPTreeVisualizer() {
             setLoadingStartTime(now);
             setError(null);
 
-            // Add timeout to prevent hanging
+            
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // Increased timeout to 15 seconds
+            const timeoutId = setTimeout(() => controller.abort(), 15000); 
 
             const response = await axios.get('/api/tree', {
                 signal: controller.signal,
@@ -134,9 +128,9 @@ export default function BPTreeVisualizer() {
                 setError(new Error(`Network error: ${error.message}`));
             }
         } finally {
-            // Ensure minimum loading time to prevent glitching
+            
             const elapsed = Date.now() - loadingStartTime;
-            const minLoadingTime = 1000; // 1 second minimum
+            const minLoadingTime = 1000; 
 
             if (elapsed < minLoadingTime) {
                 setTimeout(() => setIsLoading(false), minLoadingTime - elapsed);
@@ -146,13 +140,13 @@ export default function BPTreeVisualizer() {
         }
     }, [lastFetchTime, loadingStartTime, isLoading]);
 
-    // Initial fetch with rate limiting
+  
     useEffect(() => {
         console.log('🌳 BPTreeVisualizer: Component mounted, fetching initial data');
-        fetchTreeData(true); // Force initial fetch
-    }, []); // Only run on mount
+        fetchTreeData(true); 
+    }, []); 
 
-    // Convert backend tree data to D3 format
+
     const convertToD3Format = useCallback((node: TreeNode, searchKey?: string, searchResult?: SearchResult, nodeId: string = 'root'): D3Node => {
         const isSearchResult = searchResult?.node === node;
         const isInSearchPath = searchResult?.path.some(path => path.includes(`Level ${node.level}`));
@@ -178,7 +172,7 @@ export default function BPTreeVisualizer() {
         return d3Node;
     }, []);
 
-    // Calculate tree statistics
+   
     const calculateTreeStats = useCallback((node: TreeNode): TreeStats => {
         const countNodes = (n: TreeNode): { total: number; leaf: number; keys: number } => {
             let total = 1;
@@ -200,7 +194,6 @@ export default function BPTreeVisualizer() {
         const stats = countNodes(node);
         const avgKeysPerNode = stats.total > 0 ? (stats.keys / stats.total).toFixed(1) : '0';
 
-        // Simple balance indicator
         const balance = stats.total <= 1 ? 'Perfect' :
             stats.total <= 3 ? 'Good' :
                 stats.total <= 5 ? 'Fair' : 'Complex';
@@ -215,7 +208,7 @@ export default function BPTreeVisualizer() {
         };
     }, [treeData]);
 
-    // Search in tree structure
+
     const searchInTree = useCallback((node: TreeNode, key: string): SearchResult => {
         const startTime = performance.now();
         const path: string[] = [];
@@ -254,7 +247,7 @@ export default function BPTreeVisualizer() {
         return { found: false, path, node: null, searchTime };
     }, []);
 
-    // Handle search
+    
     const handleSearch = useCallback(async () => {
         if (!searchKey.trim() || !treeData?.root) return;
 
@@ -265,10 +258,9 @@ export default function BPTreeVisualizer() {
             const result = searchInTree(treeData.root, searchKey.trim());
             setSearchResult(result);
 
-            // Add to search history
+    
             setSearchHistory(prev => [result, ...prev.slice(0, 4)]);
 
-            // Verify with actual database query
             const response = await axios.post('/api/query', {
                 query: `GET "${searchKey.trim()}"`
             });
@@ -283,7 +275,7 @@ export default function BPTreeVisualizer() {
         }
     }, [searchKey, treeData, searchInTree]);
 
-    // Reset visualization
+
     const handleReset = useCallback(() => {
         setSearchKey('');
         setSearchResult(null);
@@ -291,19 +283,18 @@ export default function BPTreeVisualizer() {
         setHighlightMode('none');
         setZoomLevel(1);
 
-        // Reset D3 zoom
+   
         if (svgRef.current) {
             const svg = d3.select(svgRef.current);
             (svg as any).call(d3.zoom().transform, d3.zoomIdentity);
         }
     }, []);
 
-    // Manual refresh
+ 
     const handleRefresh = useCallback(async () => {
         await fetchTreeData(true);
     }, [fetchTreeData]);
 
-    // Get all keys in sorted order
     const getAllKeysSorted = useCallback((node: TreeNode): string[] => {
         if (node.is_leaf) {
             return [...node.keys].sort();
@@ -318,7 +309,7 @@ export default function BPTreeVisualizer() {
         return keys.sort();
     }, []);
 
-    // Render D3 tree visualization
+ 
     useEffect(() => {
         if (!treeData?.root || !svgRef.current) return;
 
@@ -329,10 +320,10 @@ export default function BPTreeVisualizer() {
         const height = 700;
         const margin = { top: 40, right: 120, bottom: 40, left: 120 };
 
-        // Add gradients and patterns
+        
         const defs = svg.append("defs");
 
-        // Leaf node gradient
+        
         const leafGradient = defs.append("linearGradient")
             .attr("id", "leafGradient")
             .attr("x1", "0%")
@@ -348,7 +339,7 @@ export default function BPTreeVisualizer() {
             .attr("offset", "100%")
             .attr("stop-color", "#059669");
 
-        // Internal node gradient
+    
         const internalGradient = defs.append("linearGradient")
             .attr("id", "internalGradient")
             .attr("x1", "0%")
@@ -364,7 +355,7 @@ export default function BPTreeVisualizer() {
             .attr("offset", "100%")
             .attr("stop-color", "#1d4ed8");
 
-        // Search path gradient
+   
         const searchGradient = defs.append("linearGradient")
             .attr("id", "searchGradient")
             .attr("x1", "0%")
@@ -380,14 +371,12 @@ export default function BPTreeVisualizer() {
             .attr("offset", "100%")
             .attr("stop-color", "#f59e0b");
 
-        // Create tree layout
-        const tree = d3.tree<D3Node>().size([height - margin.top - margin.bottom, width - margin.right - margin.left]);
 
-        // Create hierarchy
+        const tree = d3.tree<D3Node>().size([height - margin.top - margin.bottom, width - margin.right - margin.left]);
         const root = d3.hierarchy(convertToD3Format(treeData.root, searchKey, searchResult || undefined));
         const d3TreeData = tree(root);
 
-        // Create zoom behavior
+     
         const zoom = d3.zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.3, 3])
             .on("zoom", (event) => {
@@ -397,11 +386,10 @@ export default function BPTreeVisualizer() {
 
         svg.call(zoom);
 
-        // Create container for the tree
+ 
         const container = svg.append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // Add links between nodes with enhanced styling
         const link = container.selectAll(".link")
             .data(d3TreeData.links())
             .enter().append("path")
@@ -415,14 +403,14 @@ export default function BPTreeVisualizer() {
             .style("opacity", 0.6)
             .style("stroke-linecap", "round");
 
-        // Create node groups
+    
         const node = container.selectAll(".node")
             .data(d3TreeData.descendants())
             .enter().append("g")
             .attr("class", "node d3-node")
             .attr("transform", d => `translate(${d.y},${d.x})`);
 
-        // Add node circles with enhanced styling
+      
         node.append("circle")
             .attr("r", 12)
             .style("fill", d => {
@@ -463,7 +451,7 @@ export default function BPTreeVisualizer() {
                     .attr("r", 12);
             });
 
-        // Add node labels
+      
         node.append("text")
             .attr("dy", "0.31em")
             .attr("x", d => d.children ? -18 : 18)
@@ -474,12 +462,12 @@ export default function BPTreeVisualizer() {
             .style("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.7)")
             .text(d => d.data.nodeType === "leaf" ? "L" : "I");
 
-        // Add node details (keys) with enhanced styling
+       
         const nodeDetails = node.append("g")
             .attr("class", "node-details d3-node-details")
             .attr("transform", d => `translate(${d.children ? -100 : 25}, -50)`);
 
-        // Add background rectangle for keys with rounded corners
+        
         nodeDetails.append("rect")
             .attr("width", 200)
             .attr("height", d => Math.max(30, d.data.keys.length * 20 + 20))
@@ -506,10 +494,9 @@ export default function BPTreeVisualizer() {
             .style("stroke-width", "2px")
             .style("filter", "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))");
 
-        // Add keys with enhanced styling
         nodeDetails.selectAll(".key")
             .data(d => {
-                // Limit the number of keys displayed to prevent performance issues
+               
                 const maxKeys = 20;
                 if (d.data.keys.length > maxKeys) {
                     return d.data.keys.slice(0, maxKeys);
@@ -547,7 +534,7 @@ export default function BPTreeVisualizer() {
             })
             .text(d => d.length > 10 ? d.substring(0, 10) + "..." : d);
 
-        // Add ellipsis if there are more keys than displayed
+       
         nodeDetails.filter(d => d.data.keys.length > 20).append("text")
             .attr("x", 8)
             .attr("y", 21 * 18 + 15)
@@ -557,7 +544,7 @@ export default function BPTreeVisualizer() {
             .style("font-style", "italic")
             .text(`... and ${(d: any) => d.data.keys.length - 20} more keys`);
 
-        // Add values if enabled
+     
         if (showValues && treeData.root?.values) {
             nodeDetails.selectAll(".value")
                 .data(d => d.data.values || [])
@@ -572,7 +559,7 @@ export default function BPTreeVisualizer() {
                 .text(d => d.length > 8 ? d.substring(0, 8) + "..." : d);
         }
 
-        // Add node type label with enhanced styling
+    
         nodeDetails.append("text")
             .attr("x", 10)
             .attr("y", -10)
@@ -583,7 +570,7 @@ export default function BPTreeVisualizer() {
             .style("letter-spacing", "0.5px")
             .text(d => d.data.nodeType.toUpperCase());
 
-        // Add key count badge
+ 
         nodeDetails.append("circle")
             .attr("cx", 180)
             .attr("cy", 10)
@@ -601,11 +588,11 @@ export default function BPTreeVisualizer() {
             .style("fill", "#ffffff")
             .text(d => d.data.keys.length);
 
-        // Add leaf node connections (horizontal links)
+      
         if (treeData.root?.is_leaf) {
-            // For single leaf node, no horizontal connections needed
+          
         } else {
-            // Add horizontal connections between leaf nodes
+           
             const leafNodes = d3TreeData.descendants().filter(d => d.data.nodeType === 'leaf');
             for (let i = 0; i < leafNodes.length - 1; i++) {
                 const current = leafNodes[i];
@@ -624,7 +611,7 @@ export default function BPTreeVisualizer() {
 
     }, [treeData, searchKey, searchResult, showValues, convertToD3Format]);
 
-    // Error handling
+
     if (error) {
         return (
             <div className="bg-red-50 border border-red-200 rounded-md p-6 text-center">
@@ -665,7 +652,7 @@ export default function BPTreeVisualizer() {
 
     return (
         <div className="space-y-6">
-            {/* Enhanced Info Panel */}
+         
             {treeStats && (
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
@@ -717,7 +704,7 @@ export default function BPTreeVisualizer() {
                 </div>
             )}
 
-            {/* Enhanced Search Visualization */}
+     
             <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
                     <Search className="h-5 w-5 text-gray-500" />
@@ -763,7 +750,6 @@ export default function BPTreeVisualizer() {
                     </button>
                 </div>
 
-                {/* Search Controls */}
                 <div className="flex items-center space-x-6 mb-4">
                     <label className="flex items-center space-x-2">
                         <input
@@ -826,7 +812,7 @@ export default function BPTreeVisualizer() {
                     </div>
                 )}
 
-                {/* Search History */}
+              
                 {searchHistory.length > 0 && (
                     <div className="mt-4">
                         <h5 className="text-sm font-medium text-gray-900 mb-2">Recent Searches:</h5>
@@ -851,7 +837,7 @@ export default function BPTreeVisualizer() {
                 )}
             </div>
 
-            {/* Interactive Tree Visualization */}
+           
             <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-2">
@@ -900,7 +886,7 @@ export default function BPTreeVisualizer() {
                     </div>
                 </div>
 
-                {/* Tree State Information */}
+               
                 <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
                     <h5 className="text-sm font-medium text-blue-900 mb-2">Current Tree State</h5>
                     <div className="text-sm text-blue-700 space-y-1">
@@ -911,7 +897,7 @@ export default function BPTreeVisualizer() {
                     </div>
                 </div>
 
-                {/* D3 Tree Visualization */}
+                
                 <div className="flex justify-center">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
@@ -933,7 +919,7 @@ export default function BPTreeVisualizer() {
                     )}
                 </div>
 
-                {/* Enhanced Tree Legend */}
+                
                 <div className="mt-6 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                     <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-blue-600"></div>
@@ -958,7 +944,7 @@ export default function BPTreeVisualizer() {
                 </div>
             </div>
 
-            {/* Sorted Key Traversal */}
+            
             {treeData.root && (
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <h4 className="text-lg font-medium text-gray-900 mb-4">Sorted Key Traversal</h4>
@@ -978,7 +964,7 @@ export default function BPTreeVisualizer() {
                 </div>
             )}
 
-            {/* Educational Information */}
+       
             <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h4 className="text-lg font-medium text-gray-900 mb-4">How B+ Trees Work</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
