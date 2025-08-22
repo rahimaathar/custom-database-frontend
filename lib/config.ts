@@ -14,6 +14,12 @@ export const config = {
     cors: {
         origin: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000',
         credentials: true
+    },
+
+    // HTTP settings - force HTTP/1.1 for backend compatibility
+    http: {
+        version: '1.1',
+        keepAlive: false
     }
 };
 
@@ -27,6 +33,27 @@ export function getApiUrl(endpoint: string): string {
     const baseUrl = getBackendUrl();
     const cleanEndpoint = endpoint.replace(/^\/+/, ''); // Remove leading slashes
     return `${baseUrl}/${cleanEndpoint}`;
+}
+
+// Helper function to get axios config for backend requests
+export function getBackendAxiosConfig() {
+    return {
+        timeout: config.apiTimeout,
+        headers: {
+            'Content-Type': 'application/json',
+            'Connection': 'close', // Force HTTP/1.1
+            'Accept': 'application/json'
+        },
+        // Force HTTP/1.1 for backend compatibility
+        httpAgent: new (require('http').Agent)({
+            keepAlive: false,
+            maxSockets: 1
+        }),
+        httpsAgent: new (require('https').Agent)({
+            keepAlive: false,
+            maxSockets: 1
+        })
+    };
 }
 
 // Helper function to check if we're in production

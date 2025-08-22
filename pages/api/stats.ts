@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getApiUrl, config } from '../../lib/config';
+import { getApiUrl, getBackendAxiosConfig } from '../../lib/config';
 
 interface StatsResponse {
     success: boolean;
@@ -29,12 +29,7 @@ export default async function handler(
         // Connect to C++ backend
         const apiUrl = getApiUrl('stats');
 
-        const response = await axios.get(apiUrl, {
-            timeout: config.apiTimeout,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await axios.get(apiUrl, getBackendAxiosConfig());
 
         const result = response.data;
 

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getApiUrl, config } from '../../lib/config';
+import { getApiUrl, getBackendAxiosConfig } from '../../lib/config';
 
 // Extend global type for rate limiting
 declare global {
@@ -56,16 +56,22 @@ export default async function handler(
         console.log('🌳 Tree API: Fetching tree data from backend...');
 
         const apiUrl = getApiUrl('tree');
-        const response = await axios.get(apiUrl, {
-            timeout: config.apiTimeout * 3, // Longer timeout for tree data
+        
+        // Use HTTP/1.1 config but with longer timeout for tree data
+        const treeConfig = {
+            ...getBackendAxiosConfig(),
+            timeout: 30000, // 30 second timeout for tree data
             headers: {
+                ...getBackendAxiosConfig().headers,
                 'Accept': 'application/json',
                 'Connection': 'close',
                 'Cache-Control': 'no-cache'
             },
             maxContentLength: 10 * 1024 * 1024, // 10MB limit
             maxBodyLength: 10 * 1024 * 1024, // 10MB limit
-        });
+        };
+
+        const response = await axios.get(apiUrl, treeConfig);
 
         console.log('🌳 Tree API: Backend response received');
 

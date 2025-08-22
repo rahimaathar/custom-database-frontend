@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getApiUrl, config } from '../../lib/config';
+import { getApiUrl, getBackendAxiosConfig } from '../../lib/config';
 
 interface QueryRequest {
     query: string;
@@ -45,12 +45,7 @@ export default async function handler(
 
         const response = await axios.post(apiUrl, {
             query: query.trim()
-        }, {
-            timeout: config.apiTimeout,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        }, getBackendAxiosConfig());
 
         console.log('Backend response:', response.data);
 
