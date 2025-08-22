@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getBackendUrl, config } from '../../lib/config';
+import { getApiUrl, config } from '../../lib/config';
 
 interface QueryRequest {
     query: string;
@@ -39,11 +39,11 @@ export default async function handler(
         }
 
         // Connect to C++ backend
-        const backendUrl = getBackendUrl();
+        const apiUrl = getApiUrl('query');
 
         console.log('Sending query to backend:', query.trim());
 
-        const response = await axios.post(`${backendUrl}/query`, {
+        const response = await axios.post(apiUrl, {
             query: query.trim()
         }, {
             timeout: config.apiTimeout,

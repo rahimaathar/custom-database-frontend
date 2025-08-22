@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getBackendUrl, config } from '../../lib/config';
+import { getApiUrl, config } from '../../lib/config';
 
 interface InsertRequest {
     key: string;
@@ -40,14 +40,14 @@ export default async function handler(
         }
 
         // Connect to C++ backend
-        const backendUrl = getBackendUrl();
+        const apiUrl = getApiUrl('query');
 
         // Convert to SQL-like INSERT query
         const query = `INSERT INTO data VALUES ('${key}', '${value}')`;
 
         console.log('Sending query to backend:', query);
 
-        const response = await axios.post(`${backendUrl}/query`, {
+        const response = await axios.post(apiUrl, {
             query: query
         }, {
             timeout: config.apiTimeout,
