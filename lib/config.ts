@@ -1,7 +1,7 @@
 // Configuration for the application
 export const config = {
-    // Backend URL - defaults to localhost for development
-    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:8080',
+    // Backend URL - defaults to Render backend for production
+    backendUrl: process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'https://custom-database-backend.onrender.com',
 
     // API timeout in milliseconds
     apiTimeout: 10000,

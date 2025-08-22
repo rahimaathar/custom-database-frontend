@@ -150,7 +150,7 @@ export default async function handler(
         global.treeApiLastCall[clientIP] = now;
         console.log('Tree API: Fetching tree data from backend...');
 
-        const response = await axios.get('http://localhost:8080/tree', {
+        const response = await axios.get('https://custom-database-backend.onrender.com/tree', {
             timeout: 30000,
             headers: {
                 'Accept': 'application/json',

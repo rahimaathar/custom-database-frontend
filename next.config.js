@@ -7,7 +7,7 @@ const nextConfig = {
         return [
             {
                 source: '/api/:path*',
-                destination: 'http://localhost:8080/:path*',
+                destination: 'https://custom-database-backend.onrender.com/:path*',
             },
         ];
     },

@@ -116,13 +116,17 @@ export default function DatabaseDisplay() {
                 record.value.toLowerCase().includes(searchTerm.toLowerCase());
         })
         .sort((a, b) => {
-            let aValue: string | number = a[sortBy];
-            let bValue: string | number = b[sortBy];
+            let aValue: string | number;
+            let bValue: string | number;
 
             // Handle timestamp sorting
             if (sortBy === 'timestamp') {
                 aValue = new Date(a.timestamp || 0).getTime();
                 bValue = new Date(b.timestamp || 0).getTime();
+            } else {
+                // For key and value, we know they exist
+                aValue = a[sortBy];
+                bValue = b[sortBy];
             }
 
             if (sortOrder === 'asc') {
